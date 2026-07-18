@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fig. 4 – F1 Score and MIA% by Method</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  body {
+    background: #ffffff;
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+  }
+  .title {
+    font-style: italic;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .chart-container {
+    width: 780px;
+    position: relative;
+  }
+  .note {
+    font-style: italic;
+    font-size: 11px;
+    color: #444;
+    margin-top: 8px;
+  }
+  .fig-label {
+    font-style: italic;
+    font-size: 13px;
+    margin-top: 14px;
+  }
+  .btn {
+    margin-top: 20px;
+    padding: 8px 22px;
+    border: 1.5px solid #333;
+    background: white;
+    font-family: 'Times New Roman', serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn:hover { background: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<div class="title">Fig. 4. <em>Experimental Results: Detection F1 Score and Privacy (MIA%) by Method</em></div>
+
+<div class="chart-container">
+  <canvas id="chart" height="400"></canvas>
+</div>
+
+<div class="note">Lower MIA bar = better privacy. Dashed line = PPDC-IQ 52.3% approx. random guessing baseline.</div>
+<div class="fig-label"><em>Fig. 4 — Experimental Results: F1 Score and MIA% by Method</em></div>
+
+<button class="btn" onclick="downloadPNG()">⬇ Download PNG</button>
+
+<script>
+// ── Hatch pattern generator ──────────────────────────────────────────────
+function hatch(type, lineColor) {
+  const sz = 8;
+  const c = document.createElement('canvas');
+  c.width = sz; c.height = sz;
+  const x = c.getContext('2d');
+  x.strokeStyle = lineColor;
+  x.lineWidth = 1;
+
+  if (type === 'diag') {
+    x.beginPath(); x.moveTo(0, sz); x.lineTo(sz, 0); x.stroke();
+    x.beginPath(); x.moveTo(-sz/2, sz/2); x.lineTo(sz/2, -sz/2); x.stroke();
+    x.beginPath(); x.moveTo(sz/2, sz*1.5); x.lineTo(sz*1.5, sz/2); x.stroke();
+  }
+  if (type === 'horiz') {
+    for (let y = 1; y < sz; y += 3) {
+      x.beginPath(); x.moveTo(0, y); x.lineTo(sz, y); x.stroke();
+    }
+  }
+  if (type === 'cross') {
+    x.beginPath(); x.moveTo(0, sz); x.lineTo(sz, 0); x.stroke();
+    x.beginPath(); x.moveTo(0, 0); x.lineTo(sz, sz); x.stroke();
+  }
+  return x.createPattern(c, 'repeat');
+}
+
+// ── Chart setup ──────────────────────────────────────────────────────────
+const ctx = document.getElementById('chart').getContext('2d');
+
+const labels = ['MIMIC-IV', 'LabCorp-Syn', 'FinTrans-Syn', 'MIA %'];
+
+const datasets = [
+  {
+    label: 'HoloClean (no priv.)',
+    data: [0.94, 0.92, 0.90, 0.71],
+    backgroundColor: '#4472C4',
+    borderColor: '#4472C4',
+    borderWidth: 1,
+  },
+  {
+    label: 'Federated only',
+    data: [0.86, 0.84, 0.82, 0.64],
+    backgroundColor: hatch('diag', '#4472C4'),
+    borderColor: '#4472C4',
+    borderWidth: 1,
+  },
+  {
+    label: 'DP only (local)',
+    data: [0.80, 0.78, 0.77, 0.64],
+    backgroundColor: hatch('horiz', '#C0504D'),
+    borderColor: '#C0504D',
+    borderWidth: 1,
+  },
+  {
+    label: 'PPDC-IQ (proposed)',
+    data: [0.91, 0.88, 0.86, 0.64],
+    backgroundColor: hatch('cross', '#76923C'),
+    borderColor: '#76923C',
+    borderWidth: 1.5,
+  },
+];
+
+// ── Plugin: dashed reference line ────────────────────────────────────────
+const refLinePlugin = {
+  id: 'refLine',
+  afterDraw(chart) {
+    const { ctx, scales: { x, y } } = chart;
+    const yPx = y.getPixelForValue(0.523);
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#76923C';
+    ctx.lineWidth = 1.4;
+    ctx.moveTo(x.left, yPx);
+    ctx.lineTo(x.right + 50, yPx);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '10px Times New Roman';
+    ctx.fillStyle = '#76923C';
+    ctx.fillText('PPDC-IQ 52.3%', x.right + 55, yPx - 2);
+    ctx.font = '9px Times New Roman';
+    ctx.fillStyle = '#888';
+    ctx.fillText('~random', x.right + 55, yPx + 10);
+    ctx.restore();
+  }
+};
+
+// ── Plugin: value labels on bars ─────────────────────────────────────────
+const valueLabelPlugin = {
+  id: 'valueLabel',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      meta.data.forEach((bar, j) => {
+        const val = ds.data[j];
+        if (val == null) return;
+        ctx.save();
+        ctx.font = i === 3 ? 'bold 10px Times New Roman' : '10px Times New Roman';
+        ctx.fillStyle = '#111';
+        ctx.textAlign = 'center';
+        ctx.fillText(val.toFixed(2), bar.x, bar.y - 4);
+        ctx.restore();
+      });
+    });
+  }
+};
+
+// ── Render ────────────────────────────────────────────────────────────────
+new Chart(ctx, {
+  type: 'bar',
+  data: { labels, datasets },
+  options: {
+    responsive: true,
+    animation: false,
+    layout: { padding: { right: 120, top: 20 } },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { color: '#333' },
+        ticks: { font: { family: 'Times New Roman', size: 12 }, color: '#111' },
+      },
+      y: {
+        min: 0,
+        max: 1.0,
+        border: { color: '#333' },
+        ticks: {
+          stepSize: 0.2,
+          font: { family: 'Times New Roman', size: 11 },
+          color: '#111',
+          callback: v => v.toFixed(1),
+        },
+        title: {
+          display: true,
+          text: 'F1 Score / MIA Rate (normalized)',
+          font: { family: 'Times New Roman', size: 12 },
+          color: '#111',
+        },
+        grid: { color: '#ddd' },
+      },
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: { family: 'Times New Roman', size: 11 },
+          color: '#111',
+          padding: 16,
+          usePointStyle: false,
+        },
+      },
+      tooltip: { enabled: true },
+    },
+  },
+  plugins: [refLinePlugin, valueLabelPlugin],
+});
+
+// ── Download ──────────────────────────────────────────────────────────────
+function downloadPNG() {
+  const link = document.createElement('a');
+  link.download = 'figure4.png';
+  link.href = document.getElementById('chart').toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>
