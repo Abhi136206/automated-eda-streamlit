@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/business/New folder/c++course",
-      "program": "d:/business/New folder/c++course/build/Debug/outDebug",
+      "cwd": "d:/business/New folder/c++course/numpy",
+      "program": "d:/business/New folder/c++course/numpy/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

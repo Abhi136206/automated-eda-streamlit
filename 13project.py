@@ -17,3 +17,23 @@ print("Average score:", average_score)
 # Step 5: Sort the list in descending order and print the sorted list
 scores.sort(reverse=True)
 print("Scores sorted in descending order:",scores)
+
+
+
+
+while True:
+    num1 = int(input("Enter first number : "))
+    num2 = int(input("Enter second number : "))
+
+    option = input("what you want to do? [+, -, , /, %, *, // ] :  ")
+    if option == "exit":
+        break
+
+    elif option == "+":
+        print(f"sum of {num1} + {num2} == {num1 + num2}")
+
+    elif option == "-":
+        print(f"subtraction of {num1} - {num2} == {num1 - num2}")
+
+    else:
+        print("Please choose valid options")

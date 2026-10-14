@@ -62,5 +62,25 @@
     "ostream": "cpp",
     "system_error": "cpp"
   },
-  "C_Cpp.errorSquiggles": "disabled"
+  "C_Cpp.errorSquiggles": "disabled",
+  "sqltools.connections": [
+    {
+      "pgOptions": {
+        "statement_timeout": 0,
+        "query_timeout": 0,
+        "connectionTimeoutMillis": 5000,
+        "idleTimeoutMillis": 10000,
+        "max": 10
+      },
+      "ssh": "Disabled",
+      "previewLimit": 100,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "My PostgreSQL",
+      "database": "postgres",
+      "username": "postgres",
+      "connectionTimeout": 5000
+    }
+  ]
 }

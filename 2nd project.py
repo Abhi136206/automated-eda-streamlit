@@ -90,3 +90,6 @@ print(C)
 A,B = 12,5
 C = A//B
 print(C)
+
+# a and b are required (minimum 2 arguments)
+    # c and d are optional (maximum 4 arguments)
